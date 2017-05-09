@@ -1,0 +1,1 @@
+./bin/spark-submit --master local --class net.billjeff.ml.rf.DataExtractor ~/IDEA/rf-predict/target/random-forest-0.1-SNAPSHOT.jar
