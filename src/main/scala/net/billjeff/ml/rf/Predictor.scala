@@ -12,8 +12,8 @@ import org.apache.spark.streaming.{Minutes, Seconds, StreamingContext}
   */
 object Predictor {
   def main(args: Array[String]): Unit = {
-    if (args.length != 2) {
-      println("Usage: Predictor [modelPath] [fileDir]")
+    if (args.length != 3) {
+      println("Usage: Predictor [modelPath] [inputDataDir] [outputDataDir]")
       System.exit(1)
     }
 
@@ -30,7 +30,7 @@ object Predictor {
         println(sameModel.predict(Vectors.dense(arr.drop(1).map(_.toDouble))))
         (arr(0), sameModel.predict(Vectors.dense(arr.drop(1).map(_.toDouble))))
       })
-      .saveAsTextFiles(args(0) + "/result")
+      .saveAsTextFiles(args(2))
 
     ssc.start()
     ssc.awaitTermination()

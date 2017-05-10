@@ -5,19 +5,6 @@ var app = express();
 var web_root = '/api'
 
 app.get('/data.tsv',function(req,res){
-    fs.readdir("/Users/yushi.wxg/model/", function(err, items) {
-        for (var i=0; i<items.length; i++) {
-            var file = path + '/' + items[i];
-
-            console.log("Start: " + file);
-            fs.stat(file, function(f) {
-                return function(err, stats) {
-                   console.log(f);
-                   console.log(stats["size"]);
-                }
-            }(file));
-        }
-    });
     return res.send("date	New York	San Francisco	Austin\n20111001	63.4	62.7	72.2\n20111002	58.0	59.9	67.7\n")
 })
 
