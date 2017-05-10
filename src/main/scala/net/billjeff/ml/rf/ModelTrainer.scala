@@ -1,30 +1,37 @@
 package net.billjeff.ml.rf
 
+import java.nio.file.{Files, Paths, StandardOpenOption}
+
 import org.apache.spark.{SparkConf, SparkContext}
-// $example on$
 import org.apache.spark.mllib.tree.RandomForest
-import org.apache.spark.mllib.tree.model.RandomForestModel
 import org.apache.spark.mllib.util.MLUtils
-// $example off$
 
 object ModelTrainer {
+  def printUsage() = {
+    println("Usage: ModelTrainer [trainDataPath] [modelPath]")
+  }
+
   def main(args: Array[String]): Unit = {
-    val conf = new SparkConf().setAppName("RandomForestClassificationExample")
+    if (args.length != 2) {
+      printUsage()
+      System.exit(1)
+    }
+
+    val conf = new SparkConf().setAppName("RFModelTrainer")
     val sc = new SparkContext(conf)
-    // $example on$
-    // Load and parse the data file.
-    val data = MLUtils.loadLibSVMFile(sc, "/Users/yushi.wxg/IDEA/rf-predict/src/main/bin/data/train_model_libsvm.data/part-00000")
-    data.foreach(r => println(r))
-    // Split the data into training and test sets (30% held out for testing)
+    val data = MLUtils.loadLibSVMFile(sc, args(0))
     val splits = data.randomSplit(Array(0.7, 0.3))
     val (trainingData, testData) = (splits(0), splits(1))
 
-    // Train a RandomForest model.
-    // Empty categoricalFeaturesInfo indicates all features are continuous.
+    // Configuration to train the RF model.
+    // two category: retention or no-retention
     val numClasses = 2
-    val categoricalFeaturesInfo = Map[Int, Int]()
-    val numTrees = 3 // Use more in practice.
-    val featureSubsetStrategy = "auto" // Let the algorithm choose.
+    // fields: industry, region, social_type, `platform`, `event`, gender, age
+    // among them, feature 1, 2, 3, 16 are category feature
+    // feature 1(6), 2(8), 3(3), 16(2) are categorical features
+    val categoricalFeaturesInfo = Map[Int, Int](0 -> 6, 1 -> 8, 2 -> 3, 15 -> 2)
+    val numTrees = 3
+    val featureSubsetStrategy = "auto"
     val impurity = "gini"
     val maxDepth = 4
     val maxBins = 32
@@ -34,19 +41,23 @@ object ModelTrainer {
 
     // Evaluate model on test instances and compute test error
     val labelAndPreds = testData.map { point =>
+      println(point.features.toArray.mkString("\t"))
+      println(point.features)
+      println(model.predict(point.features))
       val prediction = model.predict(point.features)
       (point.label, prediction)
     }
-    val testErr = labelAndPreds.filter(r => r._1 != r._2).count.toDouble / testData.count()
-    println("Test Error = " + testErr)
-    println("Learned classification forest model:\n" + model.toDebugString)
 
-    // Save and load model
-    model.save(sc, "target/tmp/myRandomForestClassificationModel")
-    val sameModel = RandomForestModel.load(sc, "target/tmp/myRandomForestClassificationModel")
-    // $example off$
+    // save the stat data
+    val testErr = labelAndPreds.filter(r => r._1 != r._2).count.toDouble / testData.count()
+    val statFile = args(1) + "/stat.data"
+    Files.write(Paths.get(statFile), testErr.toString.getBytes(), StandardOpenOption.CREATE);
+    val modelFile = args(1) + "/model.data"
+    Files.write(Paths.get(modelFile), model.toDebugString.toString.getBytes(), StandardOpenOption.CREATE)
+
+    // save the model
+    model.save(sc, args(1))
 
     sc.stop()
   }
 }
-// scalastyle:on println

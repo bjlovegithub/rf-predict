@@ -100,7 +100,8 @@ object DataExtractor {
 
     // join event logs, crm feature and user profile together by company id, and save them for model trainer
     val eventJoinCrmRdd = eventFeatureRdd.keyBy(_(2)).join(crmFeatureRdd).map {case (k, (events, crm)) => {
-      // fields: user_id, (is_act, [platform], [event], industry, region, social_type)
+      // fields: user_id, (is_act, industry, region, social_type, `platform`, `event`)
+      // `platform` includes five _cnts, and `event` contains 7 _cnts
       (events(1), Array(events(0), crm(1), crm(2), crm(3)) ++ events.drop(3))
     }}.cache()
     val debug = eventJoinCrmRdd.map { case (k, arr) => Array(k) ++ arr }.cache()
@@ -109,7 +110,9 @@ object DataExtractor {
 
     val allFeatureRdd = eventJoinCrmRdd.join(userProfileRdd).map {
       case (userId, (eventJoinCrm, profile)) => {
-        val features = eventJoinCrm.drop(0) ++ profile
+        val features = eventJoinCrm.drop(1) ++ profile.drop(1)
+        // fields: industry, region, social_type, `platform`, `event`, gender, age
+        // among them, feature 1, 2, 3, 16 are category feature
         LabeledPoint(eventJoinCrm(0).toDouble, Vectors.dense(features.map(_.toDouble)))
       }
     }

@@ -8,5 +8,6 @@ object Test {
     val dataBase = "/Users/yushi.wxg/IDEA/rf-predict/src/main/bin/data"
     val eventTypes = scala.io.Source.fromFile(s"$dataBase/event_type.meta", "utf-8").getLines().toArray
     println(eventTypes.contains("VIEW_REPORT"))
+    println(args.mkString("\t"))
   }
 }

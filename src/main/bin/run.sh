@@ -1,1 +1,3 @@
 ./bin/spark-submit --master local --class net.billjeff.ml.rf.DataExtractor ~/IDEA/rf-predict/target/random-forest-0.1-SNAPSHOT.jar
+./bin/spark-submit --master local --class net.billjeff.ml.rf.ModelTrainer ~/IDEA/rf-predict/target/random-forest-0.1-SNAPSHOT.jar /Users/yushi.wxg/IDEA/rf-predict/src/main/bin/data/train_model_libsvm.data/part-00000 ~
+./bin/spark-submit --master local --class net.billjeff.ml.rf.Predictor ~/IDEA/rf-predict/target/random-forest-0.1-SNAPSHOT.jar ~ /tmp/rf
