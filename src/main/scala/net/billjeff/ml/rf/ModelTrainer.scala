@@ -13,7 +13,7 @@ object ModelTrainer {
     val sc = new SparkContext(conf)
     // $example on$
     // Load and parse the data file.
-    val data = MLUtils.loadLibSVMFile(sc, "data/mllib/sample_libsvm_data.txt")
+    val data = MLUtils.loadLibSVMFile(sc, "/Users/yushi.wxg/IDEA/rf-predict/src/main/bin/data/train_model_libsvm.data/part-00000")
     data.foreach(r => println(r))
     // Split the data into training and test sets (30% held out for testing)
     val splits = data.randomSplit(Array(0.7, 0.3))

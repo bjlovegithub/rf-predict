@@ -25,6 +25,8 @@ MAX_COMPANY_NUM = 100
 # the mapping between company to user is based on modular, e.g. user with id 10
 # has company id 10 (10%100), user with 121 has company id 21 (121%100)
 MAX_USER_NUM = 1000
+# users who do not have any activities
+NO_ACTIVITY_USER_NUM = 100
 # types of social media activies for companies
 SOCIAL_TYPE = ["TWITTER", "FACEBOOK", "GOOGLE"]
 
@@ -58,18 +60,32 @@ def write_meta():
     write("%s/region.meta" % DATA_DIR, REGION)
     write("%s/social_type.meta" % DATA_DIR, SOCIAL_TYPE)
 
-def generate_event_log():
+def generate_event_log(prefix):
     """
     Fields for user event log:
       anonymous_id, user_id, company_id, platform, event_time, event_type,
       first_event(1 for first event)
+    Everytime, we will set aside some users who do not have any activies
     """
-    with open("%s/user_events.log" % DATA_DIR, "w") as fh:
-        for i in range(MAX_EVENT_LOGS):
+
+    # set aside some users who do not have any activies
+    noActUser = {}
+    while (len(noActUser) < NO_ACTIVITY_USER_NUM):
+        uid = random.randint(0, MAX_USER_NUM-1)
+        if uid not in noActUser:
+            noActUser[uid] = 1
+    print noActUser
+
+    with open("%s/user_events_%s.log" % (DATA_DIR, prefix), "w") as fh:
+        num = 0
+        while num < MAX_EVENT_LOGS:
             uid = random.randint(0, MAX_USER_NUM-1)
-            rec = [i, uid, uid % MAX_COMPANY_NUM, random_element(PLATFORM),
+            if uid in noActUser:
+                continue
+            rec = [num, uid, uid % MAX_COMPANY_NUM, random_element(PLATFORM),
                    get_timestamp(), random_element(EVENT_TYPE), random.randint(0, 1)]
             fh.write("%s\n" % "\t".join([str(i) for i in rec]))
+            num += 1
 
 def generate_crm_profile():
     """
@@ -103,7 +119,8 @@ if __name__ == "__main__":
         print e
 
     write_meta()
-    generate_event_log()
+    generate_event_log("week0")
+    generate_event_log("week1")
     generate_crm_profile()
     generate_customer_doc()
                      
