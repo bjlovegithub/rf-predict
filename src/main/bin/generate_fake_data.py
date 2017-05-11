@@ -4,6 +4,7 @@ test purpose.
 """
 
 import os
+import sys
 import time
 import random
 
@@ -31,7 +32,7 @@ NO_ACTIVITY_USER_NUM = 100
 SOCIAL_TYPE = ["TWITTER", "FACEBOOK", "GOOGLE"]
 
 # dir to keep all generated data
-DATA_DIR = "data"
+data_dir = "data"
 # max event logs for each run of generate_fake_data
 MAX_EVENT_LOGS = 10000
 
@@ -54,11 +55,11 @@ def write_meta():
             for i in data:
                 f.write("%s\n" % i)
 
-    write("%s/platform.meta" % DATA_DIR, PLATFORM)
-    write("%s/event_type.meta" % DATA_DIR, EVENT_TYPE)
-    write("%s/industry.meta" % DATA_DIR, INDUSTRY)
-    write("%s/region.meta" % DATA_DIR, REGION)
-    write("%s/social_type.meta" % DATA_DIR, SOCIAL_TYPE)
+    write("%s/platform.meta" % data_dir, PLATFORM)
+    write("%s/event_type.meta" % data_dir, EVENT_TYPE)
+    write("%s/industry.meta" % data_dir, INDUSTRY)
+    write("%s/region.meta" % data_dir, REGION)
+    write("%s/social_type.meta" % data_dir, SOCIAL_TYPE)
 
 def generate_event_log(prefix):
     """
@@ -74,9 +75,8 @@ def generate_event_log(prefix):
         uid = random.randint(0, MAX_USER_NUM-1)
         if uid not in noActUser:
             noActUser[uid] = 1
-    print noActUser
 
-    with open("%s/user_events_%s.log" % (DATA_DIR, prefix), "w") as fh:
+    with open("%s/user_events_%s.log" % (data_dir, prefix), "w") as fh:
         num = 0
         while num < MAX_EVENT_LOGS:
             uid = random.randint(0, MAX_USER_NUM-1)
@@ -92,7 +92,7 @@ def generate_crm_profile():
     Fields for company crm profiles:
       company_id, industry, region, social_presence
     """
-    with open("%s/crm_info.data" % DATA_DIR, "w") as fh:
+    with open("%s/crm_info.data" % data_dir, "w") as fh:
         for i in range(MAX_COMPANY_NUM):
             rec = [i, random_element(INDUSTRY), random_element(REGION),
                    random_element(SOCIAL_TYPE)]
@@ -106,21 +106,16 @@ def generate_customer_doc():
     Fields for user profile:
       user_id, gender(1 for female, 0 for male), age
     """
-    with open("%s/nosql_user_profile.data" % DATA_DIR, "w") as fh:
+    with open("%s/nosql_user_profile.data" % data_dir, "w") as fh:
         for i in range(MAX_USER_NUM):
             rec = [i, random.randint(0, 1), random.randint(20, 70)]
             fh.write("%s\n" % "\t".join([str(i) for i in rec]))
 
 if __name__ == "__main__":
-    # init data dir
-    try:
-        os.mkdir(DATA_DIR)
-    except Exception, e:
-        print e
+    data_dir = sys.argv[1]
 
     write_meta()
     generate_event_log("week0")
     generate_event_log("week1")
     generate_crm_profile()
     generate_customer_doc()
-                     

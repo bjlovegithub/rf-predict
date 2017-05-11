@@ -8,7 +8,7 @@ import org.apache.spark.mllib.util.MLUtils
 
 object ModelTrainer {
   def printUsage() = {
-    println("Usage: ModelTrainer [trainDataPath] [modelPath]")
+    println("Usage: ModelTrainer <trainDataPath> <modelPath>")
   }
 
   def main(args: Array[String]): Unit = {
@@ -34,16 +34,13 @@ object ModelTrainer {
     val featureSubsetStrategy = "auto"
     val impurity = "gini"
     val maxDepth = 4
-    val maxBins = 32
+    val maxBins = 100
 
     val model = RandomForest.trainClassifier(trainingData, numClasses, categoricalFeaturesInfo,
       numTrees, featureSubsetStrategy, impurity, maxDepth, maxBins)
 
     // Evaluate model on test instances and compute test error
     val labelAndPreds = testData.map { point =>
-      println(point.features.toArray.mkString("\t"))
-      println(point.features)
-      println(model.predict(point.features))
       val prediction = model.predict(point.features)
       (point.label, prediction)
     }

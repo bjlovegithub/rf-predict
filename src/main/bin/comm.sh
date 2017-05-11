@@ -1,0 +1,15 @@
+target="$0"
+bin=`dirname "$target"`
+SYMLINK_RESOLVED_BIN=`cd "$bin"; pwd -P`
+BIN_DIR=`dirname "$SYMLINK_RESOLVED_BIN"`
+TARGET=`cd "$BIN_DIR"; cd ".."; pwd -P`
+ROOT_DIR=`dirname "$TARGET"`
+DEMO_DIR="$ROOT_DIR/demo"
+FAKE_DATA_DIR=$DEMO_DIR/data
+DATA_EXTRACTOR_OUTPUT_DIR=$DEMO_DIR/extracted_data
+MODEL_DIR=$DEMO_DIR/model
+PREDICTOR_INPUT_DIR=$DEMO_DIR/predictor_input
+PREDICTOR_OUTPUT_DIR=$DEMO_DIR/predictor_output/
+WEB_DIR="$ROOT_DIR/web"
+JOB_JAR=$ROOT_DIR/target/random-forest-0.1-SNAPSHOT.jar
+SPARK_BIN="/Users/yushi.wxg/Downloads/spark-2.1.1-bin-hadoop2.7/bin"

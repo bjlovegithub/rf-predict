@@ -24,7 +24,7 @@ var svg = d3.select("svg"),
     height = svg.attr("height") - margin.top - margin.bottom,
     g = svg.append("g").attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-var parseTime = d3.timeParse("%Y%m%d");
+var parseTime = d3.timeParse("%Y%m%d%H%M");
 
 var x = d3.scaleTime().range([0, width]),
     y = d3.scaleLinear().range([height, 0]),
@@ -33,16 +33,16 @@ var x = d3.scaleTime().range([0, width]),
 var line = d3.line()
     .curve(d3.curveBasis)
     .x(function(d) { return x(d.date); })
-    .y(function(d) { return y(d.temperature); });
+    .y(function(d) { return y(d.num); });
 
 d3.tsv("http://127.0.0.1:7777/data.tsv", type, function(error, data) {
   if (error) throw error;
 
-  var cities = data.columns.slice(1).map(function(id) {
+  var types = data.columns.slice(1).map(function(id) {
     return {
       id: id,
       values: data.map(function(d) {
-        return {date: d.date, temperature: d[id]};
+        return {date: d.date, num: d[id]};
       })
     };
   });
@@ -50,11 +50,11 @@ d3.tsv("http://127.0.0.1:7777/data.tsv", type, function(error, data) {
   x.domain(d3.extent(data, function(d) { return d.date; }));
 
   y.domain([
-    d3.min(cities, function(c) { return d3.min(c.values, function(d) { return d.temperature; }); }),
-    d3.max(cities, function(c) { return d3.max(c.values, function(d) { return d.temperature; }); })
+    d3.min(types, function(c) { return d3.min(c.values, function(d) { return d.num; }); }),
+    d3.max(types, function(c) { return d3.max(c.values, function(d) { return d.num; }); })
   ]);
 
-  z.domain(cities.map(function(c) { return c.id; }));
+  z.domain(types.map(function(c) { return c.id; }));
 
   g.append("g")
       .attr("class", "axis axis--x")
@@ -69,21 +69,21 @@ d3.tsv("http://127.0.0.1:7777/data.tsv", type, function(error, data) {
       .attr("y", 6)
       .attr("dy", "0.71em")
       .attr("fill", "#000")
-      .text("Temperature, ºF");
+      .text("Num");
 
-  var city = g.selectAll(".city")
-    .data(cities)
+  var typed = g.selectAll(".type")
+    .data(types)
     .enter().append("g")
-      .attr("class", "city");
+      .attr("class", "type");
 
-  city.append("path")
+  typed.append("path")
       .attr("class", "line")
       .attr("d", function(d) { return line(d.values); })
       .style("stroke", function(d) { return z(d.id); });
 
-  city.append("text")
+  typed.append("text")
       .datum(function(d) { return {id: d.id, value: d.values[d.values.length - 1]}; })
-      .attr("transform", function(d) { return "translate(" + x(d.value.date) + "," + y(d.value.temperature) + ")"; })
+      .attr("transform", function(d) { return "translate(" + x(d.value.date) + "," + y(d.value.num) + ")"; })
       .attr("x", 3)
       .attr("dy", "0.35em")
       .style("font", "10px sans-serif")
@@ -93,6 +93,7 @@ d3.tsv("http://127.0.0.1:7777/data.tsv", type, function(error, data) {
 function type(d, _, columns) {
   d.date = parseTime(d.date);
   for (var i = 1, n = columns.length, c; i < n; ++i) d[c = columns[i]] = +d[c];
+  console.log(d)
   return d;
 }
 

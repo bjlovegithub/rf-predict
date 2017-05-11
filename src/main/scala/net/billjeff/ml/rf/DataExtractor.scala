@@ -6,7 +6,8 @@ import org.apache.spark.mllib.util.MLUtils
 import org.apache.spark.sql.SparkSession
 
 /**
-  * Created by yushi.wxg on 2017/5/9.
+  * Extract features from source and join them to form the input data format
+  * for model trainer.
   */
 object DataExtractor {
   def thisWeek(ts: String) : Boolean = {
@@ -14,12 +15,17 @@ object DataExtractor {
   }
 
   def main(args: Array[String]) {
+    if (args.length != 2) {
+      println("Usage: DataExtractor <inputDataDir> <outputDataDir>")
+      System.exit(0)
+    }
+
     val spark = SparkSession
       .builder
       .appName("DataExtractor")
       .getOrCreate()
 
-    val dataBase = "/Users/yushi.wxg/IDEA/rf-predict/src/main/bin/data"
+    val dataBase = args(0)
     // load event types
     val eventLogsWeek0 = spark.read.textFile(s"$dataBase/user_events_week0.log").rdd
     val eventLogsWeek1 = spark.read.textFile(s"$dataBase/user_events_week1.log").rdd
@@ -77,9 +83,6 @@ object DataExtractor {
         }
       }
 
-    println(eventFeatureRdd.count())
-    eventFeatureRdd.foreach(arr => println(arr.mkString("\t")))
-
     // pre-process crm information
     val crmFeatureRdd = crmInfo.map(_.split("\t"))
       .filter(arr =>
@@ -103,10 +106,7 @@ object DataExtractor {
       // fields: user_id, (is_act, industry, region, social_type, `platform`, `event`)
       // `platform` includes five _cnts, and `event` contains 7 _cnts
       (events(1), Array(events(0), crm(1), crm(2), crm(3)) ++ events.drop(3))
-    }}.cache()
-    val debug = eventJoinCrmRdd.map { case (k, arr) => Array(k) ++ arr }.cache()
-    debug.foreach(arr => println(arr.mkString("\t")))
-    println(debug.count())
+    }}
 
     val allFeatureRdd = eventJoinCrmRdd.join(userProfileRdd).map {
       case (userId, (eventJoinCrm, profile)) => {
@@ -116,7 +116,7 @@ object DataExtractor {
         LabeledPoint(eventJoinCrm(0).toDouble, Vectors.dense(features.map(_.toDouble)))
       }
     }
-    MLUtils.saveAsLibSVMFile(allFeatureRdd, "/Users/yushi.wxg/IDEA/rf-predict/src/main/bin/data/train_model_libsvm.data")
+    MLUtils.saveAsLibSVMFile(allFeatureRdd, args(1))
 
     spark.stop()
   }

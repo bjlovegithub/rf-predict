@@ -7,15 +7,43 @@ import os
 import sys
 import json
 
+name_map = {
+    "feature 0 ": "industry",
+    "feature 1 ": "region",
+    "feature 2 ": "social_type",
+    "feature 3 ": "iphone_cnt",
+    "feature 4 ": "android_cnt",
+    "feature 5 ": "pc_cnt",
+    "feature 6 ": "ipad_cnt",
+    "feature 7 ": "other_cnt",
+    "feature 8 ": "cus_tpl_cnt",
+    "feature 9 ": "down_tpl_cnt",
+    "feature 10 ": "share_tpl_cnt",
+    "feature 11 ": "inspect_cnt",
+    "feature 12 ": "view_report_cnt",
+    "feature 13 ": "share_report_cnt",
+    "feature 14 ": "cancel_inspect_cnt",
+    "feature 15 ": "gender",
+    "feature 16 ": "age"
+}
+
+def normalize(s):
+    for k, v in name_map.iteritems():
+        if s.startswith(k):
+            return s.replace(k, v)
+    return s
+
 # Parser
 def parse(lines):
     block = []
     while lines :
 	if lines[0].startswith('If'):
 	    bl = ' '.join(lines.pop(0).split()[1:]).replace('(', '').replace(')', '')
+            bl = normalize(bl) + ' '
 	    block.append({'name':bl, 'children':parse(lines)})
 	    if lines[0].startswith('Else'):
 		be = ' '.join(lines.pop(0).split()[1:]).replace('(', '').replace(')', '')
+                be = normalize(be) + ' '
 		block.append({'name':be, 'children':parse(lines)})
 	elif not lines[0].startswith(('If','Else')):
 	    block2 = lines.pop(0)
