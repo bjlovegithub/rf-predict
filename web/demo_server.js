@@ -7,10 +7,9 @@ app.get('/data.tsv',function(req,res) {
 		if (err) {
 			throw err;
 		}
-		content = 'date\tpositive\ttotal\n' + data;
+		content = 'date\tretented_user\ttotal_user\n' + data;
 		res.send(content);
-});
-    // return res.send("date	New York	San Francisco	Austin\n20111001	63.4	62.7	72.2\n20111002	58.0	59.9	67.7\n")
+    });
 })
 
 // set up the local server
